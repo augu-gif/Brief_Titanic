@@ -67,25 +67,6 @@ La mission se déroule en 4 étapes :
 - pandas, NumPy, scikit-learn
 - Git et GitHub pour le versionnage, avec des commits réguliers et explicites
 
-## Structure du dépôt
-
-```
-Brief_Titanic/
-├── Classification/
-│   └── veille_classification_python.md   # Veille sur la classification
-├── Dataset/
-│   ├── train.csv                          # Données d'entraînement (avec Survived)
-│   ├── test.csv                           # Données de test (sans Survived)
-│   └── gender_submission.csv              # Exemple de fichier de soumission Kaggle
-├── Veille/
-│   ├── Brief_Titanic.pdf                  # Énoncé du brief
-│   ├── pipeline_machine_learning.md
-│   ├── veille_classification_python.md
-│   ├── veille_nettoyage.md                # Veille sur le nettoyage de données
-│   └── veille_nettoyage.pptx
-└── README.md
-```
-
 ## Accompagnement
 
 Le formateur est disponible en support. Les apprenants doivent d'abord **chercher dans la documentation**, puis **solliciter leurs pairs**, avant de faire appel au formateur.
