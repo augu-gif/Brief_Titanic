@@ -10,7 +10,6 @@
 - [Planning](#planning)
 - [Compétences visées](#compétences-visées)
 - [Outils](#outils)
-- [Structure du dépôt](#structure-du-dépôt)
 - [Accompagnement](#accompagnement)
 - [Modalités d'évaluation](#modalités-dévaluation)
 - [Critères de performance](#critères-de-performance)
