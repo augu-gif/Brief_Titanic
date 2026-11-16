@@ -1,4 +1,4 @@
-# 🚢 Brief Titanic
+# Brief Titanic
 
 > Quels facteurs ont réellement influencé les chances de survie des passagers du Titanic ?
 
