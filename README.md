@@ -1,94 +1,95 @@
 # Brief Titanic
 
-> Quels facteurs ont réellement influencé les chances de survie des passagers du Titanic ?
+> **Quels facteurs ont réellement influencé les chances de survie des passagers du Titanic ?**
+
+Projet réalisé dans le cadre de la formation Simplon : en tant que Data Scientist junior, analyser les données des passagers pour un **musée maritime** qui prépare une exposition sur le naufrage.
 
 ## Sommaire
 
-- [Contexte du projet](#contexte-du-projet)
-- [Les données](#les-données)
-- [Mission](#mission)
-- [Planning](#planning)
-- [Compétences visées](#compétences-visées)
-- [Outils](#outils)
-- [Accompagnement](#accompagnement)
-- [Modalités d'évaluation](#modalités-dévaluation)
-- [Critères de performance](#critères-de-performance)
-- [Ressources](#ressources)
+- [Données](#données)
+- [Démarche](#démarche)
+- [Résultats](#résultats)
+- [Structure du dépôt](#structure-du-dépôt)
+- [Relancer le projet](#relancer-le-projet)
+- [Critères du brief](#critères-du-brief)
 
----
+## Données
 
-## Contexte du projet
+Dataset Titanic ([Kaggle](https://www.kaggle.com/c/titanic)) : **891 passagers × 12 colonnes**, cible `Survived` (1 = a survécu, 38 % des passagers).
 
-En tant que **Data Scientist junior** au sein d'un cabinet de conseil en data, vous êtes missionné par un **musée maritime**. Celui-ci prépare une exposition interactive sur le naufrage du Titanic et souhaite répondre à une question :
-
-> « Quels facteurs ont réellement influencé les chances de survie des passagers ? »
-
-## Les données
-
-Le musée transmet un fichier CSV issu de ses archives ([dataset Titanic, Kaggle](https://www.kaggle.com/c/titanic)). Ce fichier n'est pas exploitable directement :
-
-| Problème | Détail |
+| Problème | Traitement |
 |---|---|
-| Valeurs manquantes | Environ **20 %** des âges sont manquants |
-| Colonne presque vide | `Cabin` est vide à plus de **75 %** |
-| Information cachée dans du texte | Le titre (`Mr`, `Mrs`, `Miss`, `Master`) est dans le nom des passagers |
-| Variables catégorielles | `Sex` et `Embarked` doivent être encodées |
-| Colonnes sans valeur prédictive | `PassengerId`, `Ticket` |
+| `Age` manquant (20 %) | Imputé par l'**âge médian du titre** (un `Master` reçoit 3,5 ans, un `Mr` 30 ans) |
+| `Cabin` manquante (77 %) | Supprimée, remplacée par `Has_cabin` (1 si la cabine est connue) |
+| `Embarked` manquant (2 lignes) | Imputé par le port le plus fréquent (`S`, Southampton) |
+| Titre caché dans `Name` | Extrait (`Mr`, `Mrs`, `Miss`, `Master`, `Autres`), puis `Name` supprimée |
+| Colonnes sans valeur prédictive | `PassengerId` et `Ticket` supprimées |
+| Variables texte | `Sex` → 0/1, `Embarked` et `Title` → encodage one-hot |
 
-## Mission
+Le dataset final (`Dataset/df_propre.csv`) ne contient **aucune valeur manquante** et **uniquement des variables numériques**.
 
-La mission se déroule en 4 étapes :
+## Démarche
 
-1. **Analyse exploratoire (EDA)** : comprendre la structure des données, les distributions, les corrélations et les valeurs aberrantes, puis formuler des hypothèses (par exemple : « les femmes et les passagers de 1re classe ont davantage survécu »).
-2. **Nettoyage et transformation** : traiter les valeurs manquantes en justifiant chaque choix, encoder les variables, créer de nouvelles variables pertinentes (*feature engineering* : titre, taille de la famille, voyage seul…).
-3. **Modélisation** : entraîner et comparer au moins 3 modèles de classification (par exemple régression logistique, Random Forest, XGBoost).
-4. **Restitution** : présenter les résultats au client.
+1. **Analyse exploratoire** : structure, valeurs manquantes, distributions, corrélations, puis hypothèses (le sexe, la classe et l'âge comptent ; le port d'embarquement n'a pas d'effet direct).
+2. **Nettoyage et transformation** : traitements ci-dessus, chacun justifié dans le notebook.
+3. **Feature engineering** : `Title`, `Has_cabin`, `FamilySize` (taille de la famille), `IsAlone` (voyage seul), `LargeFamily` (5 personnes ou plus).
+4. **Modélisation** : 3 modèles comparés (régression logistique, Random Forest, XGBoost) sur le même jeu de test (20 % des passagers, `random_state=42`).
 
-## Planning
+## Résultats
 
-| Jour | Créneau | Activités |
+| Modèle | Accuracy (validation croisée) | Accuracy (test) |
 |---|---|---|
-| **Jour 1** | Matin | Lancement du brief, veille, découverte du dataset, analyse exploratoire |
-| | Après-midi | Nettoyage, traitement des valeurs manquantes, encodage |
-| **Jour 2** | Matin | Feature engineering, modélisation et comparaison des modèles |
-| | Après-midi | Finalisation du dépôt, puis **présentation orale à 16 h** |
+| Baseline (prédit toujours « décédé ») | 61,6 % | 61,5 % |
+| XGBoost (réglages par défaut) | 79,4 % | 76,5 % |
+| Random Forest | – | 79,3 % |
+| **Régression logistique** | **82,8 %** | **83,2 %** |
 
-> **Veille (Jour 1, matin)** : 1 h pour présenter ce qu'est la classification et les bonnes pratiques de nettoyage de données. 2 groupes sont ensuite tirés au sort pour présenter leur veille.
+La **régression logistique** obtient les meilleurs résultats stables, sans surapprentissage, et c'est le modèle le plus facile à expliquer au musée.
 
-## Compétences visées
+**Ce qui a compté pour survivre :**
 
-- **C34** : assurer le nettoyage, la transformation et la réduction de la dimensionnalité des datasets.
-- **C39** : effectuer l'analyse exploratoire des données.
+1. **Être une femme ou un enfant** : 74 % de survie chez les femmes contre 19 % chez les hommes (16 % pour les hommes adultes, `Mr`).
+2. **La classe** : 63 % de survie en 1re classe contre 24 % en 3e.
+3. **Les très grandes familles** (5 personnes ou plus) ont été fortement pénalisées.
+4. **L'âge** : à profil égal, les passagers plus âgés ont moins survécu.
+5. Le **prix du billet** et le **port d'embarquement** n'ont qu'un rôle secondaire une fois la classe prise en compte.
 
-## Outils
+> Ce sont des **associations** observées dans les données, pas des causes prouvées.
 
-- Python, Jupyter Notebook
-- pandas, NumPy, scikit-learn
-- Git et GitHub pour le versionnage, avec des commits réguliers et explicites
+## Structure du dépôt
 
-## Accompagnement
+```
+Brief_Titanic/
+├── Dataset/
+│   ├── dataset-titanic-6afac2fa9ddd8043393546.csv   # données brutes fournies par le musée
+│   └── df_propre.csv                                # dataset nettoyé et encodé
+├── Notebooks/
+│   └── Brief_Titanic.ipynb                          # EDA, nettoyage, modélisation et conclusion
+├── Veille/                                          # veille : classification, nettoyage, pipeline ML
+└── README.md
+```
 
-Le formateur est disponible en support. Les apprenants doivent d'abord **chercher dans la documentation**, puis **solliciter leurs pairs**, avant de faire appel au formateur.
+## Relancer le projet
 
-Les notebooks publics Kaggle peuvent servir d'inspiration, mais tout copier-coller non compris et non justifié est proscrit.
+Le notebook est prévu pour **Google Colab** :
 
-## Modalités d'évaluation
+1. Ouvrir `Notebooks/Brief_Titanic.ipynb` dans [Google Colab](https://colab.research.google.com/).
+2. Lancer **Exécution → Tout exécuter**.
+3. À la première cellule, importer le fichier `Dataset/dataset-titanic-6afac2fa9ddd8043393546.csv` quand Colab le demande.
 
-L'évaluation repose sur deux éléments :
+Bibliothèques utilisées (déjà installées sur Colab) : `pandas`, `numpy`, `matplotlib`, `seaborn`, `scikit-learn`, `xgboost`.
 
-1. **Le dépôt GitHub et le notebook** : qualité et justification du nettoyage, pertinence de l'EDA, rigueur de la modélisation, lisibilité du code.
-2. **La restitution orale** (3 ou 4 groupes tirés au sort) : 10 minutes de présentation avec introduction, sommaire, conclusion et numéros de slides. L'apprenant présente ses choix de nettoyage, ses principales découvertes et la comparaison des modèles, en s'adressant au client (le musée) dans un langage accessible.
+> **En local** (VS Code, Jupyter) : installer les bibliothèques avec `pip install pandas numpy matplotlib seaborn scikit-learn xgboost`, supprimer la première cellule (`google.colab`) et remplacer le chemin `/content/...` par `../Dataset/dataset-titanic-6afac2fa9ddd8043393546.csv`.
 
-## Critères de performance
+Toutes les étapes aléatoires utilisent `random_state=42` : les résultats sont reproductibles.
 
-- [ ] Toutes les valeurs manquantes sont traitées et chaque choix (imputation, suppression) est justifié par écrit dans le notebook.
-- [ ] Les variables catégorielles sont encodées et le dataset final ne contient que des variables numériques exploitables.
-- [ ] Au moins 2 nouvelles variables sont créées par feature engineering, et leur apport est démontré.
-- [ ] Au moins 3 modèles de classification sont comparés.
-- [ ] Le notebook s'exécute de bout en bout sans erreur (reproductibilité, `random_state` fixé).
-- [ ] Le README permet à une personne extérieure de comprendre et de relancer le projet.
+## Critères du brief
 
-## Ressources
+- [x] Valeurs manquantes traitées, chaque choix justifié dans le notebook
+- [x] Variables catégorielles encodées, dataset final entièrement numérique
+- [x] Au moins 2 nouvelles variables créées (`Title`, `Has_cabin`, `FamilySize`, `IsAlone`, `LargeFamily`)
+- [x] Au moins 3 modèles de classification comparés
+- [x] Notebook exécuté de bout en bout sans erreur, résultats reproductibles (`random_state` fixé)
+- [x] README permettant de comprendre et de relancer le projet
 
-- Dataset : [Titanic – Machine Learning from Disaster (Kaggle)](https://www.kaggle.com/c/titanic)
-- Documentation : [pandas](https://pandas.pydata.org/docs/), [scikit-learn](https://scikit-learn.org/stable/user_guide.html)
+**Compétences visées :** C34 (nettoyage, transformation et réduction de dimensionnalité des datasets), C39 (analyse exploratoire des données).
